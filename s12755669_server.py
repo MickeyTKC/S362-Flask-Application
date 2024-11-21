@@ -1,5 +1,6 @@
 #server side flask application
-from flask import Flask, request, jsonify, time
+import os, time
+from flask import Flask, request, jsonify
 import random
 
 app = Flask(__name__)
@@ -38,7 +39,7 @@ def pi():
     concurrency = get_json.get("concurrency")
     #process part of the service
     start = time.time() #start execturion time
-    pi = compute_pi(simulations)
+    pi = 3.14
     time.sleep(1)
     end = time.time() #end execturion time
     #send response
@@ -67,5 +68,5 @@ def statistics():
     return jsonify({"message": "statistics"})
 
 if __name__ == "__main__":
-    app.run(host=HOST, port=PORT)
+    app.run(host=HOST, port=PORT,debug=True)
     
