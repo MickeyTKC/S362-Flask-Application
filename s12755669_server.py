@@ -2,6 +2,7 @@
 import os, time
 from flask import Flask, request, jsonify
 from random import random
+import threading
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 import socket
 import regex as re
@@ -11,6 +12,8 @@ app = Flask(__name__)
 HOST, PORT = "0.0.0.0", 5000
 app = Flask(__name__)
 LEGACY_HOST, LEGACY_PORT = "localhost", 31416
+TEXT_FILE = 'request_statistics.txt' # Text file for storing request statistics in CSV format
+lock = threading.Lock() # Create a lock for mutual exclusion
 #functions
 
 #R4
@@ -86,6 +89,49 @@ def average_pi(results):
     
     return average_pi
 
+#R5
+def init_file():
+    if not os.path.exists(TEXT_FILE):
+        with open(TEXT_FILE, mode='w') as file:
+            file.write('username,request_count\n')  # Write the header
+
+#R5
+def update_request_statistics(username):
+    with lock:
+        # Read existing data
+        records = []
+        user_found = False
+        
+        with open(TEXT_FILE, mode='r') as file:
+            next(file)  # Skip the header
+            for line in file:
+                row = line.strip().split(',')
+                if row[0] == username:
+                    user_found = True
+                    row[1] = str(int(row[1]) + 1)  # Increment the count
+                records.append(row)
+
+        # If user not found, add a new record
+        if not user_found:
+            records.append([username, '1'])
+        
+        # Write updated records back to the text file
+        with open(TEXT_FILE, mode='w') as file:
+            file.write('username,request_count\n')  # Write the header
+            for record in records:
+                file.write(','.join(record) + '\n')  # Write all records
+
+#R3
+def get_request_statistics():
+    with lock:  # Ensure mutual exclusion
+        stats = []
+        with open(TEXT_FILE, mode='r') as file:
+            next(file)  # Skip header
+            for line in file:
+                row = line.strip().split(',')
+                stats.append((row[0], int(row[1])))  # Convert count to int
+        return stats
+
 #routing   
     
 #testing flask server   
@@ -102,6 +148,7 @@ def pi():
     password = get_json.get("password")
     if not login(username, password):
         return jsonify({"error": "user info error"}), 401
+    update_request_statistics(username)
     #get request data
     simulations = get_json.get("simulations")
     concurrency = get_json.get("concurrency")
@@ -130,6 +177,7 @@ def legacy_pi():
     password = get_json.get("password")
     if not login(username, password):
         return jsonify({"error": "user info error"}), 401
+    update_request_statistics(username)
     protocol = get_json.get("protocol")
     concurrency = get_json.get("concurrency")
     #invalid field handling
@@ -163,9 +211,14 @@ def statistics():
     password = get_json.get("password")
     if not login(username, password):
         return jsonify({"error": "user info error"})
-    
-    return jsonify({"message": "statistics"})
+    #get statistics
+    stats = get_request_statistics()
+    list = []
+    for username, count in stats:
+        list.append({"username": username, "count": count})
+    return jsonify(list)
 
 if __name__ == "__main__":
+    init_file()
     app.run(host=HOST, port=PORT,debug=True)
     
