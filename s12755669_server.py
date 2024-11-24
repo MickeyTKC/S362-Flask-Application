@@ -142,6 +142,7 @@ def legacy_pi():
     if concurrency == 1:
         if protocol == "tcp": pi = tcp_legacy_pi(None)
         elif protocol == "udp": pi = udp_legacy_pi(None)
+        if not is_valid_pi(pi): pi = 0
     else:
         with ProcessPoolExecutor(max_workers=concurrency) as executor:
             futures = []
