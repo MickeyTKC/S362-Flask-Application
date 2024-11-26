@@ -4,7 +4,7 @@ import json, requests
 USERNAME, PASSWORD = "1111", "1111-pw"
 SIMULATIONS = 100000
 CONCURRENCY = 2
-PROTOCAL = "tcp"
+PROTOCAL = "udp"
 
 def r1():
     req = {"username":USERNAME, "password":PASSWORD, "simulations":SIMULATIONS, "concurrency":CONCURRENCY}
