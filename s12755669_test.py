@@ -40,51 +40,61 @@ class TestFlask(unittest.TestCase):
         
     def test_invalid_simulations(self):
         #R1
-        req = {"username":"2222", "password":"2222-pw", "simulations":0, "concurrency":8}
+        req = {"username":self.user2, "password":"2222-pw", "simulations":0, "concurrency":8}
         res = requests.post("http://localhost:5000/pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field simulations")
-        req = {"username":"2222", "password":"2222-pw", "simulations":100000001, "concurrency":8}
+        req = {"username":self.user2, "password":"2222-pw", "simulations":100000001, "concurrency":8}
         res = requests.post("http://localhost:5000/pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field simulations")
-        req = {"username":"2222", "password":"2222-pw", "simulations":100000.1, "concurrency":8}
+        req = {"username":self.user2, "password":"2222-pw", "simulations":100000.1, "concurrency":8}
         res = requests.post("http://localhost:5000/pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field simulations")
         
     def test_missing_simulations(self):
-        req = {"username":"2222", "password":"2222-pw", "concurrency":8}
+        req = {"username":self.user2, "password":"2222-pw", "concurrency":8}
         res = requests.post("http://localhost:5000/pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         #err msg
         self.assertEqual(res.json()["error"], "missing field simulations")
     
     def test_invalid_concurrency(self):
         #R1
-        req = {"username":"2222", "password":"2222-pw", "simulations":100000000, "concurrency":0}
+        req = {"username":self.user2, "password":"2222-pw", "simulations":100000000, "concurrency":0}
         res = requests.post("http://localhost:5000/pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field concurrency")
-        req = {"username":"2222", "password":"2222-pw", "simulations":100000000, "concurrency":9}
+        req = {"username":self.user2, "password":"2222-pw", "simulations":100000000, "concurrency":9}
         res = requests.post("http://localhost:5000/pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field concurrency")
-        req = {"username":"2222", "password":"2222-pw", "simulations":100000000, "concurrency":2.2}
+        req = {"username":self.user2, "password":"2222-pw", "simulations":100000000, "concurrency":2.2}
         res = requests.post("http://localhost:5000/pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field concurrency")
         #R2
-        req = {"username":"1111", "password":"1111-pw", "protocol":"tcp", "concurrency":0}
+        req = {"username":self.user1, "password":"1111-pw", "protocol":"tcp", "concurrency":0}
         res = requests.post("http://localhost:5000/legacy_pi", json=req)
+        self.user_count[self.user1] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field concurrency")
-        req = {"username":"1111", "password":"1111-pw", "protocol":"tcp", "concurrency":9}
+        req = {"username":self.user1, "password":"1111-pw", "protocol":"tcp", "concurrency":9}
         res = requests.post("http://localhost:5000/legacy_pi", json=req)
+        self.user_count[self.user1] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field concurrency")
-        req = {"username":"2222", "password":"2222-pw", "protocol":"tcp", "concurrency":2.2}
+        req = {"username":self.user2, "password":"2222-pw", "protocol":"tcp", "concurrency":2.2}
         res = requests.post("http://localhost:5000/legacy_pi", json=req)
+        self.user_count[self.user2] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field concurrency")
         
@@ -104,10 +114,12 @@ class TestFlask(unittest.TestCase):
         #R2
         req = {"username":self.user1, "password":"1111-pw", "protocol":"aaa", "concurrency":1}
         res = requests.post("http://localhost:5000/legacy_pi", json=req)
+        self.user_count[self.user1] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field protocol")
         req = {"username":self.user1, "password":"1111-pw", "concurrency":1}
         res = requests.post("http://localhost:5000/legacy_pi", json=req)
+        self.user_count[self.user1] += 1
         self.assertEqual(res.status_code, 400)
         self.assertEqual(res.json()["error"], "invalid field protocol")
 
@@ -173,11 +185,9 @@ class TestFlask(unittest.TestCase):
         self.assertTrue(res.json()["pi"]==0 or(res.json()["pi"] >= 3 and res.json()["pi"] <= 3.5))
         
     def test_stats(self):
-        req = {"username":"1111", "password":"1111-pw"}
+        req = {"username":self.user1, "password":"1111-pw"}
         res = requests.post("http://localhost:5000/statistics", json=req)
         self.assertEqual(res.status_code, 200)
-        #return list of username and request_count
-        #username has "1111" and "2222"
         results = res.json()
         has_user1 = False
         has_user2 = False
