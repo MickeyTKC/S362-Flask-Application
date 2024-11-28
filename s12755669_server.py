@@ -155,7 +155,7 @@ def pi():
     simulations = get_json.get("simulations")
     concurrency = get_json.get("concurrency") or 1
     #invalid field handling
-    if simulations < 100 or simulations > 100000000: return jsonify({"error": "invalid field simulations"}), 400
+    if type(simulations) != int or simulations < 100 or simulations > 100000000: return jsonify({"error": "invalid field simulations"}), 400
     if type(concurrency) != int or concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
     #process part of the service
     if concurrency > 1:
