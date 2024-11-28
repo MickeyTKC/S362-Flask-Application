@@ -19,6 +19,10 @@ class TestFlask(unittest.TestCase):
         res = requests.post("http://localhost:5000/pi", json=req)
         self.assertEqual(res.status_code, 401)
         self.assertEqual(res.json()["error"], "user info error")
+        req = {"username":"11111", "password":"s1111-pw", "simulations":0, "concurrency":1}
+        res = requests.post("http://localhost:5000/pi", json=req)
+        self.assertEqual(res.status_code, 401)
+        self.assertEqual(res.json()["error"], "user info error")
         #R2
         req = {"username":1111, "password":"s1111-pw", "simulations":0, "concurrency":1}
         res = requests.post("http://localhost:5000/legacy_pi", json=req)

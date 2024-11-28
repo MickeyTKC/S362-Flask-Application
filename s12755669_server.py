@@ -19,7 +19,7 @@ lock = threading.Lock() # Create a lock for mutual exclusion
 #R4
 def login(username, password):
     # username string must be digit
-    if type(username) != str: return False
+    if type(username) != str or len(username) != 4: return False
     if not(username.isdigit()): return False
     # password string must be username-pw
     if type(password) != str: return False
