@@ -1,5 +1,5 @@
 #server side flask application
-import os, time
+import os, time, timeit
 from flask import Flask, request, jsonify
 from random import random
 import threading
@@ -142,6 +142,8 @@ def index():
 #R1
 @app.post("/pi")
 def pi():
+    #start execturion time
+    start = timeit.default_timer()
     #login is required
     get_json = request.get_json()
     username = get_json.get("username")
@@ -151,12 +153,11 @@ def pi():
     update_request_statistics(username)
     #get request data
     simulations = get_json.get("simulations")
-    concurrency = get_json.get("concurrency")
+    concurrency = get_json.get("concurrency") or 1
     #invalid field handling
     if simulations < 100 or simulations > 100000000: return jsonify({"error": "invalid field simulations"}), 400
-    if concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
+    if type(concurrency) != int or concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
     #process part of the service
-    start = time.time() #start execturion time
     if concurrency > 1:
         with ProcessPoolExecutor(max_workers=concurrency) as executor:
             futures = [executor.submit(compute_count, simulations // concurrency) for _ in range(concurrency)]
@@ -164,13 +165,16 @@ def pi():
     else:
         total_count = compute_count(simulations)
     pi_estimate = total_count / simulations * 4
-    end = time.time() #end execturion time
+    #end execturion time
+    end = timeit.default_timer() 
     #send response
-    return jsonify({"simulations": simulations, "concurrency": concurrency, "pi": pi_estimate, "execution_time": end-start})
+    return jsonify({"simulations": simulations, "concurrency": concurrency, "pi": float(pi_estimate), "execution_time": end-start})
 
 #R2
 @app.post("/legacy_pi")
 def legacy_pi():
+    #start execturion time
+    start = timeit.default_timer()
     #login is required
     get_json = request.get_json()
     username = get_json.get("username")
@@ -179,14 +183,14 @@ def legacy_pi():
         return jsonify({"error": "user info error"}), 401
     update_request_statistics(username)
     protocol = get_json.get("protocol")
-    concurrency = get_json.get("concurrency")
+    concurrency = get_json.get("concurrency") or 1
     #invalid field handling
     if not isinstance(protocol, str) or (protocol != "tcp" and protocol != "udp"):
         return jsonify({"error": "invalid field protocol"}), 400
-    if concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
+    if type(concurrency) != int or concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
     #process part of the service
     pi = 0
-    start = time.time() #start execturion time
+    
     if concurrency == 1:
         if protocol == "tcp": pi = tcp_legacy_pi(None)
         elif protocol == "udp": pi = udp_legacy_pi(None)
@@ -199,8 +203,9 @@ def legacy_pi():
             elif protocol == "udp": 
                 result = list(executor.map(udp_legacy_pi, range(concurrency)))
             pi = average_pi(result)
-    end = time.time() #end execturion time
-    return jsonify({"protocol": protocol, "concurrency": concurrency, "pi": pi, "execution_time": end-start})
+    #end execturion time
+    end = timeit.default_timer() 
+    return jsonify({"protocol": protocol, "concurrency": concurrency, "pi": float(pi), "execution_time": end-start})
 
 #R3
 @app.post("/statistics")
