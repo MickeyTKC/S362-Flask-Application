@@ -161,7 +161,7 @@ def pi():
     if type(concurrency) != int or concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
     #process part of the service
     if concurrency > 1:
-        with ProcessPoolExecutor(max_workers=concurrency) as executor:
+        with ThreadPoolExecutor(max_workers=concurrency) as executor:
             futures = [executor.submit(compute_count, simulations // concurrency) for _ in range(concurrency)]
             total_count = sum(future.result() for future in futures)
     else:
