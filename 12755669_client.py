@@ -3,7 +3,7 @@ import json, requests
 
 USERNAME, PASSWORD = "1111", "1111-pw"
 SIMULATIONS = 100000
-CONCURRENCY = 2
+CONCURRENCY = 8
 PROTOCAL = "udp"
 
 def r1():
@@ -23,4 +23,5 @@ def r3():
 
 
 if __name__ == "__main__":
+    print(r1())
     print(r2())
