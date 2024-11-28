@@ -78,9 +78,9 @@ def is_valid_pi(pi_string):
 #R2
 def average_pi(results):
     valid_results = []
-    print(f"{results=}")
+    #print(f"{results=}")
     for result in results:
-        print(f"{result=}")
+        #print(f"{result=}")
         if is_valid_pi(result):
             valid_results.append(float(result))  # Convert valid strings to float
             
@@ -153,7 +153,9 @@ def pi():
     update_request_statistics(username)
     #get request data
     simulations = get_json.get("simulations")
-    concurrency = get_json.get("concurrency") or 1
+    if simulations is None: return jsonify({"error": "missing field simulations"}), 400
+    concurrency = get_json.get("concurrency")
+    if concurrency is None: concurrency = 1
     #invalid field handling
     if type(simulations) != int or simulations < 100 or simulations > 100000000: return jsonify({"error": "invalid field simulations"}), 400
     if type(concurrency) != int or concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
@@ -183,9 +185,10 @@ def legacy_pi():
         return jsonify({"error": "user info error"}), 401
     update_request_statistics(username)
     protocol = get_json.get("protocol")
-    concurrency = get_json.get("concurrency") or 1
+    concurrency = get_json.get("concurrency")
+    if concurrency is None: concurrency = 1
     #invalid field handling
-    if not isinstance(protocol, str) or (protocol != "tcp" and protocol != "udp"):
+    if type(protocol) != str or (protocol != "tcp" and protocol != "udp"):
         return jsonify({"error": "invalid field protocol"}), 400
     if type(concurrency) != int or concurrency < 1 or concurrency > 8: return jsonify({"error": "invalid field concurrency"}), 400
     #process part of the service
@@ -215,12 +218,12 @@ def statistics():
     username = get_json.get("username")
     password = get_json.get("password")
     if not login(username, password):
-        return jsonify({"error": "user info error"})
+        return jsonify({"error": "user info error"}), 401
     #get statistics
     stats = get_request_statistics()
     list = []
     for username, count in stats:
-        list.append({"username": username, "count": count})
+        list.append({"username": username, "request_count": count})
     return jsonify(list)
 
 if __name__ == "__main__":
